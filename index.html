@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>正在跳转...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px 32px;
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: white;
+      border-radius: 20px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .logo svg { width: 52px; height: 52px; }
+    h1 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; opacity: 0.85; margin-bottom: 32px; }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: 14px;
+      border: none;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-alipay {
+      background: white;
+      color: #1677ff;
+    }
+    .btn-wechat {
+      background: #07c160;
+      color: white;
+    }
+    .btn-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    .btn-text { flex: 1; }
+    .tips {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 24px;
+      line-height: 1.6;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status { font-size: 14px; opacity: 0.8; margin-top: 16px; }
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      font-size: 13px;
+      opacity: 0.6;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.3);
+    }
+    .divider span { padding: 0 12px; }
+    .direct-link {
+      color: white;
+      text-decoration: underline;
+      opacity: 0.8;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo" id="logo">
+      <!-- 默认显示支付宝图标 -->
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="10" fill="#1677FF"/>
+        <path d="M24 8C15.163 8 8 15.163 8 24C8 32.837 15.163 40 24 40C32.837 40 40 32.837 40 24C40 15.163 32.837 8 24 8Z" fill="white"/>
+        <path d="M33.5 27.2C31.8 26.4 28.2 24.8 26.4 23.9C27.6 22.1 28.4 19.9 28.6 17.5H24.1V15.8H29.7V14.2H24.1V11.5H21.9V14.2H16.3V15.8H21.9V17.5H17.4C17.6 20 18.5 22.3 19.8 24.1C18.1 25 14.5 26.7 13 27.4C12.1 27.9 11.5 28.8 11.5 29.8C11.5 31.3 12.7 32.5 14.2 32.5C14.8 32.5 15.4 32.3 15.9 32C17.5 31 20.3 28.9 22.1 27.3C23.8 28.8 26.3 30.9 27.9 31.9C28.5 32.3 29.1 32.5 29.7 32.5C31.2 32.5 32.4 31.3 32.4 29.8C32.4 28.7 31.9 27.8 33.5 27.2Z" fill="#1677FF"/>
+      </svg>
+    </div>
+    
+    <div id="loading">
+      <div class="spinner"></div>
+      <h1>正在检测环境</h1>
+      <div class="subtitle">请稍候...</div>
+    </div>
+
+    <div id="content" style="display:none;">
+      <h1 id="title">选择打开方式</h1>
+      <div class="subtitle" id="subtitle">点击下方按钮继续</div>
+      
+      <button class="btn btn-alipay" id="alipayBtn" onclick="openInAlipay()">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        <span class="btn-text">在支付宝中打开</span>
+      </button>
+      
+      <button class="btn btn-wechat" id="wechatBtn" onclick="openInWechat()">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        <span class="btn-text">在微信中打开</span>
+      </button>
+      
+      <div class="divider"><span>或</span></div>
+      
+      <a href="#" class="direct-link" onclick="openInBrowser(); return false;">直接在浏览器中打开</a>
+      
+      <div class="tips" id="tips"></div>
+    </div>
+    
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    // 获取目标URL（从URL参数 ?target=xxx 或 hash #xxx 获取）
+    function getTargetUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const target = params.get('target') || params.get('url') || params.get('u');
+      if (target) {
+        try {
+          return decodeURIComponent(target);
+        } catch(e) {
+          return target;
+        }
+      }
+      // 默认目标
+      return 'https://shijinggz.cn/testweb?debug=true';
+    }
+
+    const TARGET_URL = getTargetUrl();
+
+    // 支付宝 scheme（appId=20000067 是扫一扫内置浏览器）
+    const ALIPAY_SCHEME = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(TARGET_URL);
+    
+    // 微信 scheme（只能唤起微信，不能传参）
+    const WECHAT_SCHEME = 'weixin://';
+
+    // 检测环境
+    const ua = navigator.userAgent.toLowerCase();
+    const isAlipay = /alipay|aliclient/i.test(ua);
+    const isWechat = /micromessenger/i.test(ua);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
+
+    // 页面加载
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        
+        // 根据环境调整提示
+        const tips = document.getElementById('tips');
+        const alipayBtn = document.getElementById('alipayBtn');
+        const wechatBtn = document.getElementById('wechatBtn');
+        
+        if (isAlipay) {
+          // 已在支付宝内，直接跳转
+          document.getElementById('title').textContent = '正在跳转';
+          document.getElementById('subtitle').textContent = '即将打开指定页面';
+          alipayBtn.style.display = 'none';
+          wechatBtn.style.display = 'none';
+          document.querySelector('.divider').style.display = 'none';
+          document.querySelector('.direct-link').style.display = 'none';
+          tips.innerHTML = '正在支付宝内打开...';
+          setTimeout(function() {
+            window.location.href = TARGET_URL;
+          }, 500);
+        } else if (isWechat) {
+          // 已在微信内
+          document.getElementById('title').textContent = '在微信中打开';
+          document.getElementById('subtitle').textContent = '点击下方按钮';
+          alipayBtn.style.display = 'flex';
+          wechatBtn.style.display = 'none';
+          tips.innerHTML = '微信内可直接访问网页<br>或使用其他方式打开';
+        } else {
+          // 普通浏览器
+          if (isAndroid) {
+            tips.innerHTML = '安卓用户推荐选择「支付宝」<br>可一键唤起并打开页面';
+          } else if (isIOS) {
+            tips.innerHTML = 'iOS用户选择「支付宝」后<br>需在弹出框中点击「打开」确认';
+          } else {
+            tips.innerHTML = '请选择合适的方式打开';
+          }
+        }
+        
+        // 更新状态
+        document.getElementById('status').textContent = '目标页面: ' + TARGET_URL.substring(0, 30) + '...';
+      }, 600);
+    });
+
+    // 在支付宝中打开
+    function openInAlipay() {
+      if (isAlipay) {
+        window.location.href = TARGET_URL;
+      } else {
+        // 唤起支付宝
+        window.location.href = ALIPAY_SCHEME;
+        
+        // 3秒后检查，如果没唤起成功，提示用户
+        setTimeout(function() {
+          if (!document.hidden) {
+            alert('未能唤起支付宝，请确保已安装支付宝App');
+          }
+        }, 3000);
+      }
+    }
+
+    // 在微信中打开（实际上只能唤起微信，无法直接跳转）
+    function openInWechat() {
+      if (isWechat) {
+        window.location.href = TARGET_URL;
+      } else {
+        alert('请手动分享此链接到微信，或在微信内打开');
+        // 复制链接到剪贴板
+        copyToClipboard(window.location.href);
+      }
+    }
+
+    // 在浏览器中直接打开
+    function openInBrowser() {
+      window.location.href = TARGET_URL;
+    }
+
+    // 复制到剪贴板
+    function copyToClipboard(text) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function() {
+          alert('链接已复制到剪贴板，请粘贴到微信');
+        });
+      } else {
+        const input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        alert('链接已复制到剪贴板，请粘贴到微信');
+      }
+    }
+  </script>
+</body>
+</html>
