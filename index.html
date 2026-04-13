@@ -230,18 +230,37 @@
     // 在支付宝中打开
     function openInAlipay() {
       if (isAlipay) {
+        // 已在支付宝内，直接跳转目标页
         window.location.href = TARGET_URL;
-      } else {
-        // 唤起支付宝
-        window.location.href = ALIPAY_SCHEME;
+        return;
+      }
+
+      // 安卓使用 intent:// 协议唤起（更可靠）
+      if (isAndroid) {
+        // intent 格式，带 fallback 到应用商店
+        const intentUrl = 'intent://platformapi/startapp?appId=20000067&url=' + 
+                         encodeURIComponent(encodeURIComponent(TARGET_URL)) + 
+                         '#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end';
         
-        // 3秒后检查，如果没唤起成功，提示用户
+        window.location.href = intentUrl;
+        
+        // 2秒后如果没唤起，尝试标准 scheme
         setTimeout(function() {
           if (!document.hidden) {
-            alert('未能唤起支付宝，请确保已安装支付宝App');
+            window.location.href = ALIPAY_SCHEME;
           }
-        }, 3000);
+        }, 2000);
+      } else {
+        // iOS 或其他设备使用标准 scheme
+        window.location.href = ALIPAY_SCHEME;
       }
+      
+      // 3秒后检查，如果没唤起成功，提示用户
+      setTimeout(function() {
+        if (!document.hidden) {
+          alert('未能唤起支付宝，请确保已安装支付宝App');
+        }
+      }, 3500);
     }
 
     // 在微信中打开（实际上只能唤起微信，无法直接跳转）
