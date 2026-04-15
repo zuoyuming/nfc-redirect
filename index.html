@@ -288,11 +288,12 @@
           wechatBtn.style.display = 'none';
           tips.innerHTML = '微信内可直接访问网页<br>或使用其他方式打开';
         } else {
-          // 普通浏览器
+          // 普通浏览器 - 改为点击触发
+          document.getElementById('subtitle').textContent = '请点击按钮打开';
           if (isAndroid) {
-            tips.innerHTML = '安卓用户推荐选择「支付宝」<br>可一键唤起并打开页面';
+            tips.innerHTML = '点击按钮唤起支付宝<br><span style="font-size:12px;opacity:0.7">首次需在弹窗中点「允许」并勾选"记住"</span>';
           } else if (isIOS) {
-            tips.innerHTML = 'iOS用户选择「支付宝」后<br>需在弹出框中点击「打开」确认';
+            tips.innerHTML = '点击按钮唤起支付宝<br><span style="font-size:12px;opacity:0.7">首次需在弹窗中点「打开」</span>';
           } else {
             tips.innerHTML = '请选择合适的方式打开';
           }
@@ -300,7 +301,8 @@
 
         // 更新状态
         document.getElementById('status').textContent = '目标页面: ' + TARGET_URL.substring(0, 30) + '...';
-        openInAlipay()
+        // 自动跳转
+        setTimeout(openInAlipay, 500);
       }, 600);
     });
 
@@ -313,24 +315,13 @@
       }
 
       if (isAndroid) {
-        // 安卓：render.alipay.com + 双重编码方案（用户确认可用）
-        // const encodedScheme = encodeURIComponent(
-        // 'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(TARGET_URL)
-        //  );
-        //  const renderUrl = 'https://render.alipay.com/p/s/i?scheme=' + encodedScheme;
-        // window.location.href = renderUrl; 
-
-        window.location.href = ALIPAY_SCHEME;
-        //  window.location.href = 'alipays://platformapi/startapp?appId=20000067&url=https%3A%2F%2Fshijinggz.cn%2Ftestweb%23pages_pay%2Fpay%2Fpay%3Fdebug%3Dtrue%26gunName%3D10' 
-
-        // 5秒后检查，如果没唤起成功，提示用户
-        setTimeout(function () {
-          if (!document.hidden) {
-            alert('未能唤起支付宝，请确保已安装支付宝App');
-          }
-        }, 5000);
+        // Android：优先用 intent: 协议（Chrome 安卓支持较好）
+        const intentUrl = 'intent://platformapi/startapp?appId=20000067&url=' 
+          + encodeURIComponent(TARGET_URL) 
+          + '#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end';
+        window.location.href = intentUrl;
       } else {
-        // iOS：单编码的 alipays:// 直接scheme（原来可用的方案）
+        // iOS：直接用 scheme
         window.location.href = ALIPAY_SCHEME;
       }
     }
