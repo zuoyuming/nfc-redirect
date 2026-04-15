@@ -249,38 +249,23 @@
       }
 
       if (isAndroid) {
-        // 安卓：先用 intent:// 唤起支付宝并传入 render.alipay.com 页面
-        // render.alipay.com 内会再跳转到目标URL（双重编码方案）
+        // 安卓：render.alipay.com + 双重编码方案（用户确认可用）
         const encodedScheme = encodeURIComponent(
           'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(encodeURIComponent(TARGET_URL))
         );
         const renderUrl = 'https://render.alipay.com/p/s/i?scheme=' + encodedScheme;
-        
-        // 用 intent:// 唤起支付宝打开 renderUrl
-        const fallback = encodeURIComponent('https://d.alipay.com/i/alipay.index');
-        const intentUrl = 'intent://platformapi/startapp?appId=20000067&url=' + 
-                         encodeURIComponent(renderUrl) + 
-                         '#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;S.browser_fallback_url=' + fallback + ';end';
-        
-        window.location.href = intentUrl;
-        
-        // 2.5秒后备用：直接打开 render.alipay.com（系统默认浏览器打开后会再唤支付宝）
+        window.location.href = renderUrl;
+
+        // 3秒后检查，如果没唤起成功，提示用户
         setTimeout(function() {
           if (!document.hidden) {
-            window.location.href = ALIPAY_RENDER_URL;
+            alert('未能唤起支付宝，请确保已安装支付宝App');
           }
-        }, 2500);
+        }, 3000);
       } else {
-        // iOS：直接跳 render.alipay.com，它会自动唤起支付宝
-        window.location.href = ALIPAY_RENDER_URL;
+        // iOS：单编码的 alipays:// 直接scheme（原来可用的方案）
+        window.location.href = ALIPAY_SCHEME;
       }
-      
-      // 4秒后检查，如果没唤起成功，提示用户
-      setTimeout(function() {
-        if (!document.hidden) {
-          alert('未能唤起支付宝，请确保已安装支付宝App');
-        }
-      }, 4000);
     }
 
     // 在微信中打开（实际上只能唤起微信，无法直接跳转）
