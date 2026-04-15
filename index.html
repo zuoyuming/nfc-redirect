@@ -171,12 +171,14 @@
 
     // 处理URL：把 # 编码为 %23，确保hash参数不丢失
     function encodeUrlForAlipay(url) {
-      // 先对整个URL进行编码，确保特殊字符（包括#）都被正确处理
       return encodeURIComponent(url);
     }
 
-    // 支付宝 scheme（appId=20000067 是扫一扫内置浏览器）
-    const ALIPAY_SCHEME = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeUrlForAlipay(TARGET_URL);
+    // 支付宝 scheme
+    // appId=20000067: 扫一扫webview（受限）
+    // appId=20000003: 支付宝内置浏览器（更可靠）
+    // 使用直接打开H5的方案：alipays://platformapi/startapp?appId=20000003&startMultApp=YES&url=xxx
+    const ALIPAY_SCHEME = 'alipays://platformapi/startapp?appId=20000003&startMultApp=YES&url=' + encodeUrlForAlipay(TARGET_URL);
     
     // 微信 scheme（只能唤起微信，不能传参）
     const WECHAT_SCHEME = 'weixin://';
@@ -244,8 +246,8 @@
 
       // 安卓使用 intent:// 协议唤起（更可靠）
       if (isAndroid) {
-        // intent 格式，URL 只编码一次
-        const intentUrl = 'intent://platformapi/startapp?appId=20000067&url=' + 
+        // intent 格式，appId=20000003 是支付宝内置浏览器，URL 只编码一次
+        const intentUrl = 'intent://platformapi/startapp?appId=20000003&startMultApp=YES&url=' + 
                          encodeURIComponent(TARGET_URL) + 
                          '#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end';
         
