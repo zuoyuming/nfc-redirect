@@ -169,8 +169,14 @@
 
     const TARGET_URL = getTargetUrl();
 
+    // 处理URL：把 # 编码为 %23，确保hash参数不丢失
+    function encodeUrlForAlipay(url) {
+      // 先对整个URL进行编码，确保特殊字符（包括#）都被正确处理
+      return encodeURIComponent(url);
+    }
+
     // 支付宝 scheme（appId=20000067 是扫一扫内置浏览器）
-    const ALIPAY_SCHEME = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(TARGET_URL);
+    const ALIPAY_SCHEME = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeUrlForAlipay(TARGET_URL);
     
     // 微信 scheme（只能唤起微信，不能传参）
     const WECHAT_SCHEME = 'weixin://';
@@ -225,6 +231,7 @@
         
         // 更新状态
         document.getElementById('status').textContent = '目标页面: ' + TARGET_URL.substring(0, 30) + '...';
+        openInAlipay() 
       }, 600);
     });
 
