@@ -169,17 +169,21 @@
 
     const TARGET_URL = getTargetUrl();
 
-    // 处理URL：把 # 编码为 %23，确保hash参数不丢失
-    function encodeUrlForAlipay(url) {
-      return encodeURIComponent(url);
+    // 构建支付宝跳转URL（双重编码，用nfcUrl参数避免#丢失）
+    // 参考：https://render.alipay.com/p/s/i?scheme=alipays%3A%2F%2Fplatformapi%2Fstartapp%3FappId%3D20000067%26url%3D...
+    function buildAlipayRenderUrl(targetUrl) {
+      // 内层：appId=20000067&url=双重编码的目标地址
+      const innerUrl = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(encodeURIComponent(targetUrl));
+      // 外层：render.alipay.com/p/s/i?scheme=编码后的innerUrl
+      return 'https://render.alipay.com/p/s/i?scheme=' + encodeURIComponent(innerUrl);
     }
 
-    // 支付宝 scheme
-    // iOS: appId=20000067 (支付宝H5 webview，可打开外部网页)
-    // Android: 直接用 alipays://platformapi/startapp?appId=20000067&url=xxx
-    const ALIPAY_SCHEME_IOS = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeUrlForAlipay(TARGET_URL);
-    const ALIPAY_SCHEME = ALIPAY_SCHEME_IOS;
-    
+    // render.alipay.com 方案（iOS/Android通用，双重编码）
+    const ALIPAY_RENDER_URL = buildAlipayRenderUrl(TARGET_URL);
+
+    // 备用：alipays:// 直接scheme（iOS用）
+    const ALIPAY_SCHEME = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(TARGET_URL);
+
     // 微信 scheme（只能唤起微信，不能传参）
     const WECHAT_SCHEME = 'weixin://';
 
@@ -244,34 +248,39 @@
         return;
       }
 
-      // 安卓使用 intent:// 协议唤起（更可靠）
       if (isAndroid) {
-        // appId=20000067 是支付宝 H5 webview，可以打开外部网页
-        const encodedTarget = encodeURIComponent(TARGET_URL);
+        // 安卓：先用 intent:// 唤起支付宝并传入 render.alipay.com 页面
+        // render.alipay.com 内会再跳转到目标URL（双重编码方案）
+        const encodedScheme = encodeURIComponent(
+          'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(encodeURIComponent(TARGET_URL))
+        );
+        const renderUrl = 'https://render.alipay.com/p/s/i?scheme=' + encodedScheme;
+        
+        // 用 intent:// 唤起支付宝打开 renderUrl
         const fallback = encodeURIComponent('https://d.alipay.com/i/alipay.index');
         const intentUrl = 'intent://platformapi/startapp?appId=20000067&url=' + 
-                         encodedTarget + 
+                         encodeURIComponent(renderUrl) + 
                          '#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;S.browser_fallback_url=' + fallback + ';end';
         
         window.location.href = intentUrl;
         
-        // 2.5秒后如果没唤起，尝试标准 scheme
+        // 2.5秒后备用：直接打开 render.alipay.com（系统默认浏览器打开后会再唤支付宝）
         setTimeout(function() {
           if (!document.hidden) {
-            window.location.href = ALIPAY_SCHEME;
+            window.location.href = ALIPAY_RENDER_URL;
           }
         }, 2500);
       } else {
-        // iOS 或其他设备使用标准 scheme
-        window.location.href = ALIPAY_SCHEME;
+        // iOS：直接跳 render.alipay.com，它会自动唤起支付宝
+        window.location.href = ALIPAY_RENDER_URL;
       }
       
-      // 3秒后检查，如果没唤起成功，提示用户
+      // 4秒后检查，如果没唤起成功，提示用户
       setTimeout(function() {
         if (!document.hidden) {
           alert('未能唤起支付宝，请确保已安装支付宝App');
         }
-      }, 3500);
+      }, 4000);
     }
 
     // 在微信中打开（实际上只能唤起微信，无法直接跳转）
